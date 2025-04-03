@@ -2,24 +2,20 @@ from flask import Flask, request, jsonify
 from pyrogram import Client
 from pyrogram.types import ChatInviteLink
 import requests
-import time
+from datetime import datetime, timedelta
 
-# DADOS DA CONTA
+# TELEGRAM CONFIG
 api_id = 21884784
 api_hash = "4bd2d2de4ed0d1662bbe341e95280e95"
 session_name = "satoshi"
-
-# CANAL
-chat_id = -1002531479445  # Satoshi VIP Room
+chat_id = -1002531479445
 nome_do_link = "Aprovação ADM"
-
-# WEBHOOK DE RETORNO
 webhook_destino = "https://webhook.flowzin.site/webhook/satoshi-aprovação"
 
-# TELEGRAM CLIENT
+# PYROGRAM
 app_pyro = Client(session_name, api_id=api_id, api_hash=api_hash)
 
-# FLASK SERVER
+# FLASK
 app = Flask(__name__)
 
 @app.route("/gera-link", methods=["POST"])
@@ -29,9 +25,11 @@ def gerar_link():
 
         app_pyro.start()
 
+        expire_date = datetime.utcnow() + timedelta(days=1)
+
         link: ChatInviteLink = app_pyro.create_chat_invite_link(
             chat_id=chat_id,
-            expire_date=int(time.time()) + 86400,  # 1 dia
+            expire_date=expire_date,
             member_limit=1,
             name=nome_do_link
         )
@@ -40,7 +38,6 @@ def gerar_link():
 
         print(f"✅ Link gerado: {link.invite_link}")
 
-        # ENVIA PRO WEBHOOK
         payload = {
             "nome": nome_do_link,
             "link": link.invite_link
